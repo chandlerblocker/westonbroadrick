@@ -87,6 +87,8 @@ PROJECTS = [
     },
 ]
 
+FIRST = PROJECTS[0]["slug"]  # where "Projects" links go
+
 # Order on the home page (matches the current site)
 HOME_ORDER = ["pala", "fetacowboy", "pita-jungle", "residential", "nonprofit"]
 
@@ -180,6 +182,7 @@ def header(p, current=""):
     def cur(key):
         return ' aria-current="page"' if key == current else ""
     home = p or "./"
+    on_project = ' aria-current="true"' if current in [x["slug"] for x in PROJECTS] else ""
     # Projects opens a dropdown on desktop; in the phone menu the projects are listed underneath
     items = "".join(f'<li><a href="{p}projects/{x["slug"]}/"{cur(x["slug"])}>{escape(x["name"])}</a></li>' for x in PROJECTS)
     return f"""<a class="skip" href="#main">Skip to content</a>
@@ -189,7 +192,7 @@ def header(p, current=""):
   <nav class="nav" id="site-nav" aria-label="Main">
     <a href="{home}"{cur("home")}>Home</a>
     <div class="nav-drop">
-      <a href="{p}projects/"{cur("projects")} class="nav-drop-toggle">Projects</a>
+      <a href="{p}projects/{FIRST}/"{on_project} class="nav-drop-toggle">Projects</a>
       <ul class="nav-sub">{items}</ul>
     </div>
     <a href="{p}contact/"{cur("about")}>About</a>
@@ -206,7 +209,7 @@ def footer(p):
     </div>
     <div class="footer-base">
       <span>&copy; {YEAR} Weston Broadrick Studio &middot; Phoenix, Arizona</span>
-      <nav aria-label="Footer"><a href="{p}projects/">Projects</a><a href="{p}contact/">About</a></nav>
+      <nav aria-label="Footer"><a href="{p}projects/{FIRST}/">Projects</a><a href="{p}contact/">About</a></nav>
     </div>
   </div>
 </footer>
@@ -315,7 +318,7 @@ def build_home():
   </section>
 
   <section class="index wrap" aria-labelledby="work-h">
-    <div class="index-head"><h2 class="eyebrow" id="work-h" style="margin:0">Selected Work</h2><a class="eyebrow" href="projects/">All projects</a></div>
+    <div class="index-head"><h2 class="eyebrow" id="work-h" style="margin:0">Selected Work</h2></div>
 {work_rows(p, HOME_ORDER)}
   </section>
 
@@ -325,21 +328,9 @@ def build_home():
 
 
 def build_projects_index():
-    p = "../"
-    write("projects/index.html", f"""{head("Projects", p, "projects/")}
-<body>
-{header(p, "projects")}
-<main id="main">
-  <section class="page-head wrap">
-    <span class="eyebrow">Hospitality &middot; Residential &middot; Nonprofit</span>
-    <h1 class="hero-title" style="margin-top:14px">Projects</h1>
-  </section>
-  <section class="index wrap">
-{work_rows(p, [x["slug"] for x in PROJECTS])}
-  </section>
-</main>
-{footer(p)}""")
-
+    # No Projects page any more — /projects (old Squarespace address) forwards to the first project
+    write("projects/index.html", f"""<!doctype html><meta charset="utf-8"><title>Weston Broadrick Studio</title>
+<link rel="canonical" href="{DOMAIN}/projects/{FIRST}/"><meta http-equiv="refresh" content="0; url={FIRST}/"><a href="{FIRST}/">Continue</a>""")
 
 def build_project(i):
     pr = PROJECTS[i]
@@ -429,11 +420,11 @@ def build_extras():
   <section class="page-head wrap" style="min-height:70vh">
     <span class="eyebrow">404</span>
     <h1 class="hero-title" style="margin-top:14px">Page not found</h1>
-    <p style="margin-top:28px"><a class="work-link eyebrow" href="/projects/">View projects</a></p>
+    <p style="margin-top:28px"><a class="work-link eyebrow" href="/projects/{FIRST}/">View projects</a></p>
   </section>
 </main>
 {footer("/")}""")
-    urls = ["", "projects/", "contact/"] + [f"projects/{x['slug']}/" for x in PROJECTS]
+    urls = ["", "contact/"] + [f"projects/{x['slug']}/" for x in PROJECTS]
     write("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
           + "".join(f"  <url><loc>{DOMAIN}/{u}</loc></url>\n" for u in urls) + "</urlset>\n")
     write("robots.txt", f"User-agent: *\nAllow: /\nSitemap: {DOMAIN}/sitemap.xml\n")
