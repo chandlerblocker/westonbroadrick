@@ -216,7 +216,7 @@ def footer(p):
 def work_rows(p, order):
     """The big alternating project list used on Home and Projects."""
     by_slug = {x["slug"]: x for x in PROJECTS}
-    pattern = ["a", "b", "c", "a", "b"]
+    pattern = ["a", "b", "a", "c", "b"]  # a = photo left, b = photo right, c = full width
     sizes = {"a": "(max-width: 820px) 100vw, 66vw", "b": "(max-width: 820px) 100vw, 58vw", "c": "100vw"}
     out = []
     for i, slug in enumerate(order):
