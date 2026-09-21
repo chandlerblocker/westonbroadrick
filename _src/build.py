@@ -16,6 +16,8 @@ from html import escape
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOMAIN = "https://www.westonbroadrick.com"
 EMAIL = "weston@westonbroadrick.com"
+PHONE = "602.628.1132"
+PHONE_LINK = "+16026281132"
 YEAR = "2026"
 IMAGES = json.load(open(os.path.join(ROOT, "images.json")))
 
@@ -83,7 +85,7 @@ PROJECTS = [
 ]
 
 # Order on the home page (matches the current site)
-HOME_ORDER = ["pala", "fetacowboy", "residential", "pita-jungle", "nonprofit"]
+HOME_ORDER = ["pala", "fetacowboy", "pita-jungle", "residential", "nonprofit"]
 
 # Photo descriptions, read aloud by screen readers and used by Google Images
 ALT = {
@@ -118,16 +120,16 @@ ALT = {
 }
 
 # Studio copy, word for word from the current site
-STUDIO_LEAD = "Weston Broadrick Studio is a Phoenix-based interior design practice specializing in restaurant and hospitality environments."
+STUDIO_LEAD = "Weston Broadrick Studio is a Phoenix-based interior design practice specializing in office, restaurant and hospitality environments."
 STUDIO_PARAS = [
     "Founded by Weston Broadrick, the studio is known for creating refined, immersive interiors that elevate the guest experience while supporting the operational goals of each client.",
     "Weston brings over a decade of experience from Ralph Lauren Home, where he developed a deep understanding of craftsmanship, materiality, and the art of layered, narrative-driven spaces. Influenced by Ralph Lauren’s distinct point of view—where heritage, lifestyle, and environment intersect—his work reflects a balance of timeless design and modern sensibility.",
     "The studio designs residential, hospitality, and retail interiors, with a particular focus on restaurants. Each project is approached as a complete experience, where layout, lighting, texture, and detail work together to shape how a space feels and functions.",
     "Weston Broadrick Studio works with a discerning clientele and takes on a limited number of projects each year to maintain the highest standards of craft. This selective approach fosters a highly collaborative and considered design process, ensuring each interior is both visually compelling and deeply functional—spaces that captivate guests and endure over time.",
 ]
-HOME_LEAD = "A Phoenix-based interior design studio specializing in restaurant and hospitality spaces."
+HOME_LEAD = "A Phoenix-based interior design studio specializing in office, restaurant and hospitality spaces."
 HOME_BODY = "With over a decade of experience at Ralph Lauren Home, Weston brings a refined, detail-driven approach to creating spaces that elevate the guest experience and support business growth. The studio works with a discerning clientele and takes on a limited number of projects each year to maintain the highest standards of craft."
-DESCRIPTION = "Weston Broadrick Studio is a Phoenix interior design studio specializing in restaurant and hospitality spaces, shaped by over a decade at Ralph Lauren Home."
+DESCRIPTION = "Weston Broadrick Studio is a Phoenix interior design studio specializing in office, restaurant and hospitality spaces, shaped by over a decade at Ralph Lauren Home."
 
 
 # ---------------------------------------------------------------------------
@@ -172,17 +174,22 @@ def head(title, p, path, desc=DESCRIPTION, og="res-01"):
 
 
 def header(p, current=""):
-    def a(href, label, key):
-        cur = ' aria-current="page"' if key == current else ""
-        return f'<a href="{p}{href}"{cur}>{label}</a>'
+    def cur(key):
+        return ' aria-current="page"' if key == current else ""
+    home = p or "./"
+    # Projects opens a dropdown on desktop; in the phone menu the projects are listed underneath
+    items = "".join(f'<li><a href="{p}projects/{x["slug"]}/"{cur(x["slug"])}>{escape(x["name"])}</a></li>' for x in PROJECTS)
     return f"""<a class="skip" href="#main">Skip to content</a>
 <header class="site-header">
-  <a class="wordmark" href="{p or './'}" aria-label="Weston Broadrick Studio, home"><span>Weston</span><span>Broadrick</span></a>
+  <a class="logo" href="{home}"><img src="{p}images/logo.png" width="1000" height="273" alt="Weston Broadrick Studio"></a>
   <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
   <nav class="nav" id="site-nav" aria-label="Main">
-    {a("projects/", "Projects", "projects")}
-    {a("contact/", "Studio", "studio")}
-    <a href="mailto:{EMAIL}">Inquire</a>
+    <a href="{home}"{cur("home")}>Home</a>
+    <div class="nav-drop">
+      <a href="{p}projects/"{cur("projects")} class="nav-drop-toggle">Projects</a>
+      <ul class="nav-sub">{items}</ul>
+    </div>
+    <a href="{p}contact/"{cur("about")}>About</a>
   </nav>
 </header>"""
 
@@ -191,12 +198,12 @@ def footer(p):
     return f"""<footer class="site-footer">
   <div class="wrap">
     <div class="footer-cta reveal">
-      <span class="eyebrow">A limited number of projects each year</span><br>
-      <a class="footer-email" href="mailto:{EMAIL}">{EMAIL}</a>
+      <a class="footer-email" href="mailto:{EMAIL}">{EMAIL}</a><br>
+      <a class="footer-phone" href="tel:{PHONE_LINK}">{PHONE}</a>
     </div>
     <div class="footer-base">
       <span>&copy; {YEAR} Weston Broadrick Studio &middot; Phoenix, Arizona</span>
-      <nav aria-label="Footer"><a href="{p}projects/">Projects</a><a href="{p}contact/">Studio</a></nav>
+      <nav aria-label="Footer"><a href="{p}projects/">Projects</a><a href="{p}contact/">About</a></nav>
     </div>
   </div>
 </footer>
@@ -269,12 +276,12 @@ def build_home():
     }
     write("index.html", f"""{head("", p, "")}
 <body class="has-hero">
-{header(p)}
+{header(p, "home")}
 <main id="main">
   <section class="hero">
     {img("res-01", p, eager=True, focus="50% 22%")}
     <div class="hero-text">
-      <h1 class="hero-title">Weston<br>Broadrick</h1>
+      <h1 class="visually-hidden">Weston Broadrick Studio</h1>
       <div class="hero-meta">
         <span class="eyebrow">Interior Design</span>
         <span class="eyebrow">Phoenix, Arizona</span>
@@ -346,13 +353,12 @@ def build_project(i):
     desc = pr["lead"] or f"{pr['name']} — {pr['sector'].lower()} interior by Weston Broadrick Studio, {pr['location']}."
     write(f"projects/{pr['slug']}/index.html", f"""{head(pr["name"], p, f"projects/{pr['slug']}", desc, pr["hero"])}
 <body class="has-hero">
-{header(p, "projects")}
+{header(p, pr["slug"])}
 <main id="main">
   <section class="hero">
     {img(pr["hero"], p, eager=True, focus=pr.get("focus", ""))}
     <div class="hero-text">
       <h1 class="hero-title">{escape(pr["name"])}</h1>
-      <div class="hero-meta"><span class="eyebrow">{escape(pr["sector"])}</span><span class="eyebrow">{escape(pr["location"])}</span></div>
     </div>
   </section>
   <div class="wrap">
@@ -380,13 +386,12 @@ def build_project(i):
 def build_studio():
     p = "../"
     paras = "\n".join(f"        <p>{escape(t)}</p>" for t in STUDIO_PARAS)
-    write("contact/index.html", f"""{head("Studio", p, "contact", og="studio-weston")}
+    write("contact/index.html", f"""{head("About", p, "contact", og="studio-weston")}
 <body>
-{header(p, "studio")}
+{header(p, "about")}
 <main id="main">
   <section class="page-head wrap">
-    <span class="eyebrow">About &amp; Contact</span>
-    <h1 class="hero-title" style="margin-top:14px">The Studio</h1>
+    <h1 class="hero-title">About</h1>
   </section>
   <section class="wrap about-grid">
     {img("studio-weston", p, "(max-width: 820px) 100vw, 40vw")}
@@ -394,7 +399,8 @@ def build_studio():
       <p class="statement-lead">{escape(STUDIO_LEAD)}</p>
 {paras}
       <p style="margin-top:2.4em"><span class="eyebrow">Inquiries</span><br>
-        <a class="work-link" style="margin-top:10px" href="mailto:{EMAIL}">{EMAIL}</a></p>
+        <a class="work-link" style="margin-top:10px" href="mailto:{EMAIL}">{EMAIL}</a><br>
+        <a class="work-link" style="margin-top:10px" href="tel:{PHONE_LINK}">{PHONE}</a></p>
     </div>
   </section>
 </main>

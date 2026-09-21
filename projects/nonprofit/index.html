@@ -22,12 +22,15 @@
 <body class="has-hero">
 <a class="skip" href="#main">Skip to content</a>
 <header class="site-header">
-  <a class="wordmark" href="../../" aria-label="Weston Broadrick Studio, home"><span>Weston</span><span>Broadrick</span></a>
+  <a class="logo" href="../../"><img src="../../images/logo.png" width="1000" height="273" alt="Weston Broadrick Studio"></a>
   <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
   <nav class="nav" id="site-nav" aria-label="Main">
-    <a href="../../projects/" aria-current="page">Projects</a>
-    <a href="../../contact/">Studio</a>
-    <a href="mailto:weston@westonbroadrick.com">Inquire</a>
+    <a href="../../">Home</a>
+    <div class="nav-drop">
+      <a href="../../projects/" class="nav-drop-toggle">Projects</a>
+      <ul class="nav-sub"><li><a href="../../projects/pala/">Pa’La</a></li><li><a href="../../projects/fetacowboy/">Feta Cowboy</a></li><li><a href="../../projects/pita-jungle/">Pita Jungle</a></li><li><a href="../../projects/residential/">Residential</a></li><li><a href="../../projects/nonprofit/" aria-current="page">Nonprofit</a></li></ul>
+    </div>
+    <a href="../../contact/">About</a>
   </nav>
 </header>
 <main id="main">
@@ -35,7 +38,6 @@
     <img src="../../images/np-01.jpg" srcset="../../images/np-01-sm.jpg 1000w, ../../images/np-01.jpg 1317w" sizes="100vw" width="1317" height="2000" alt="Colorful textiles and lanterns inside the Boho Beach House playhouse" data-full="../../images/np-01.jpg" fetchpriority="high" decoding="async">
     <div class="hero-text">
       <h1 class="hero-title">Nonprofit</h1>
-      <div class="hero-meta"><span class="eyebrow">Nonprofit</span><span class="eyebrow">Phoenix, Arizona</span></div>
     </div>
   </section>
   <div class="wrap">
@@ -63,12 +65,12 @@
 <footer class="site-footer">
   <div class="wrap">
     <div class="footer-cta reveal">
-      <span class="eyebrow">A limited number of projects each year</span><br>
-      <a class="footer-email" href="mailto:weston@westonbroadrick.com">weston@westonbroadrick.com</a>
+      <a class="footer-email" href="mailto:weston@westonbroadrick.com">weston@westonbroadrick.com</a><br>
+      <a class="footer-phone" href="tel:+16026281132">602.628.1132</a>
     </div>
     <div class="footer-base">
       <span>&copy; 2026 Weston Broadrick Studio &middot; Phoenix, Arizona</span>
-      <nav aria-label="Footer"><a href="../../projects/">Projects</a><a href="../../contact/">Studio</a></nav>
+      <nav aria-label="Footer"><a href="../../projects/">Projects</a><a href="../../contact/">About</a></nav>
     </div>
   </div>
 </footer>
