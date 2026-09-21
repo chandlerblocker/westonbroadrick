@@ -33,7 +33,7 @@ PROJECTS = [
     {
         "slug": "pala", "name": "Pa’La", "sector": "Restaurant", "location": "Phoenix, Arizona",
         "hero": "pala-01", "tile": "pala-01",
-        "lead": "A wood-fired kitchen in Phoenix.",
+        "lead": "",
         "body": "",
         "gallery": [
             ("offset", "pala-02", "pala-04"),
@@ -58,12 +58,12 @@ PROJECTS = [
         "hero": "pita-02", "tile": "pita-02",
         "lead": "", "body": "",
         "gallery": [
-            ("narrow", "pita-01"),
+            ("offset", "pita-01", "pita-02"),
         ],
     },
     {
         "slug": "residential", "name": "Residential", "sector": "Residential", "location": "Arizona",
-        "hero": "res-03", "tile": "res-03",
+        "hero": "res-03", "tile": "res-03", "hide_sector": True,
         "lead": "", "body": "",
         "gallery": [
             ("two", "res-01", "res-02"),
@@ -74,12 +74,12 @@ PROJECTS = [
     },
     {
         "slug": "nonprofit", "name": "Nonprofit", "sector": "Nonprofit", "location": "Phoenix, Arizona",
-        "hero": "np-01", "tile": "np-01",
+        "hero": "np-01", "tile": "np-01", "hide_sector": True,
         "subtitle": "The Boho Beach House",
         "lead": "The Boho Beach House is a coastal-inspired playhouse created in support of PANDA and its annual fundraising efforts.",
         "body": "Designed and donated by the studio, and realized in collaboration with Sonora West Development and PHX Architecture, the project reflects a balance of playfulness and considered design.",
         "gallery": [
-            ("narrow", "np-02"),
+            ("two", "np-01", "np-02"),
         ],
     },
 ]
@@ -124,7 +124,7 @@ STUDIO_LEAD = "Weston Broadrick Studio is a Phoenix-based interior design practi
 STUDIO_PARAS = [
     "Founded by Weston Broadrick, the studio is known for creating refined, immersive interiors that elevate the guest experience while supporting the operational goals of each client.",
     "Weston brings over a decade of experience from Ralph Lauren Home, where he developed a deep understanding of craftsmanship, materiality, and the art of layered, narrative-driven spaces. Influenced by Ralph Lauren’s distinct point of view—where heritage, lifestyle, and environment intersect—his work reflects a balance of timeless design and modern sensibility.",
-    "The studio designs residential, hospitality, and retail interiors, with a particular focus on restaurants. Each project is approached as a complete experience, where layout, lighting, texture, and detail work together to shape how a space feels and functions.",
+    "The studio designs office, residential, hospitality, and retail interiors. Each project is approached as a complete experience, where layout, lighting, texture, and detail work together to shape how a space feels and functions.",
     "Weston Broadrick Studio works with a discerning clientele and takes on a limited number of projects each year to maintain the highest standards of craft. This selective approach fosters a highly collaborative and considered design process, ensuring each interior is both visually compelling and deeply functional—spaces that captivate guests and endure over time.",
 ]
 HOME_LEAD = "A Phoenix-based interior design studio specializing in office, restaurant and hospitality spaces."
@@ -311,7 +311,6 @@ def build_home():
       <div>
         <span class="eyebrow">The Studio</span>
         <p class="studio-quote">Over a decade at Ralph Lauren Home, where heritage, lifestyle, and environment intersect.</p>
-        <p>{escape(STUDIO_PARAS[2])}</p>
         <a class="eyebrow work-link" href="contact/">About the studio</a>
       </div>
     </div>
@@ -364,7 +363,7 @@ def build_project(i):
   <div class="wrap">
     <dl class="project-meta reveal">
       <div><dt class="eyebrow">Project</dt><dd>{escape(pr["name"])}</dd></div>
-      <div><dt class="eyebrow">Sector</dt><dd>{escape(pr["sector"])}</dd></div>
+      {"" if pr.get("hide_sector") else f'<div><dt class="eyebrow">Sector</dt><dd>{escape(pr["sector"])}</dd></div>'}
       <div><dt class="eyebrow">Location</dt><dd>{escape(pr["location"])}</dd></div>
       <div><dt class="eyebrow">Scope</dt><dd>{escape(subtitle)}</dd></div>
     </dl>
