@@ -1,0 +1,432 @@
+#!/usr/bin/env python3
+"""
+Builds the Weston Broadrick Studio website.
+
+Everything the site says lives in the PROJECTS list and the copy blocks
+below. Edit those, then run:   python3 _src/build.py
+It rewrites every .html page. Styles are in css/site.css, behavior in js/site.js.
+
+Page addresses match the old Squarespace site (/projects/pala, /contact, ...)
+so existing links and Google results keep working.
+"""
+import json
+import os
+from html import escape
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DOMAIN = "https://www.westonbroadrick.com"
+EMAIL = "weston@westonbroadrick.com"
+YEAR = "2026"
+IMAGES = json.load(open(os.path.join(ROOT, "images.json")))
+
+# ---------------------------------------------------------------------------
+# Projects, in the order they appear on the Projects page.
+# gallery rows:  ("two", a, b)      two portraits side by side
+#                ("offset", a, b)   tall photo + wide photo, staggered
+#                ("full", a)        one photo, full width
+#                ("inset", a)       one photo, full width with side margins
+#                ("narrow", a)      one tall photo, centered
+# ---------------------------------------------------------------------------
+PROJECTS = [
+    {
+        "slug": "pala", "name": "Pa’La", "sector": "Restaurant", "location": "Phoenix, Arizona",
+        "hero": "pala-01", "tile": "pala-01",
+        "lead": "A wood-fired kitchen in Phoenix.",
+        "body": "",
+        "gallery": [
+            ("offset", "pala-02", "pala-04"),
+            ("full", "pala-05"),
+            ("two", "pala-lounge", "pala-03"),
+            ("inset", "pala-06"),
+            ("two", "pala-07", "pala-08"),
+        ],
+    },
+    {
+        "slug": "fetacowboy", "name": "Feta Cowboy", "sector": "Restaurant", "location": "Phoenix, Arizona",
+        "hero": "feta-04", "tile": "feta-cover",
+        "lead": "", "body": "",
+        "gallery": [
+            ("two", "feta-cover", "feta-02"),
+            ("full", "feta-01"),
+            ("narrow", "feta-03"),
+        ],
+    },
+    {
+        "slug": "pita-jungle", "name": "Pita Jungle", "sector": "Restaurant", "location": "Arcadia, Phoenix",
+        "hero": "pita-02", "tile": "pita-02",
+        "lead": "", "body": "",
+        "gallery": [
+            ("narrow", "pita-01"),
+        ],
+    },
+    {
+        "slug": "residential", "name": "Residential", "sector": "Residential", "location": "Arizona",
+        "hero": "res-03", "tile": "res-03",
+        "lead": "", "body": "",
+        "gallery": [
+            ("two", "res-01", "res-02"),
+            ("offset", "res-04", "res-09"),
+            ("two", "res-05", "res-06"),
+            ("two", "res-07", "res-08"),
+        ],
+    },
+    {
+        "slug": "nonprofit", "name": "Nonprofit", "sector": "Nonprofit", "location": "Phoenix, Arizona",
+        "hero": "np-01", "tile": "np-01",
+        "subtitle": "The Boho Beach House",
+        "lead": "The Boho Beach House is a coastal-inspired playhouse created in support of PANDA and its annual fundraising efforts.",
+        "body": "Designed and donated by the studio, and realized in collaboration with Sonora West Development and PHX Architecture, the project reflects a balance of playfulness and considered design.",
+        "gallery": [
+            ("narrow", "np-02"),
+        ],
+    },
+]
+
+# Order on the home page (matches the current site)
+HOME_ORDER = ["pala", "fetacowboy", "residential", "pita-jungle", "nonprofit"]
+
+# Photo descriptions, read aloud by screen readers and used by Google Images
+ALT = {
+    "pala-01": "Red octopus mural spanning the bar ceiling at Pa’La",
+    "pala-02": "Lounge seating against a slatted wood wall at Pa’La",
+    "pala-03": "Brass table lamp in front of red octopus artwork at Pa’La",
+    "pala-04": "White lounge chairs beneath an exposed steel ceiling at Pa’La",
+    "pala-05": "High-top tables along floor-to-ceiling windows at Pa’La",
+    "pala-06": "Dining room with bistro chairs and framed art at Pa’La",
+    "pala-07": "Dining room with iron chandeliers and an open stair at Pa’La",
+    "pala-08": "Wood-fired kitchen counter under globe pendants at Pa’La",
+    "pala-lounge": "Low banquette lounge with warm pendant lighting at Pa’La",
+    "feta-cover": "Long dining room with banquette and dome pendants at Feta Cowboy",
+    "feta-01": "Hand-painted cowboy mural over the dining room at Feta Cowboy",
+    "feta-02": "Cowhide-upholstered chairs at navy tables, Feta Cowboy",
+    "feta-03": "Ceramic salt and pepper shakers with a cowboy illustration",
+    "feta-04": "Sculptural branch chandelier framed in light at Feta Cowboy",
+    "pita-01": "Dining room with pendant lighting at Pita Jungle Arcadia",
+    "pita-02": "Bar with black dome pendants and a painted mural at Pita Jungle Arcadia",
+    "res-01": "Living room with a leather chair and a reclaimed wood table",
+    "res-02": "Library shelves with a table lamp and collected objects",
+    "res-03": "Entry hall with staircase, red runner, and wood console",
+    "res-04": "Living room with built-in shelving and leather club chairs",
+    "res-05": "Game room with a billiards table and gallery wall",
+    "res-06": "Sitting room layered with a collected gallery wall",
+    "res-07": "Study with a writing desk and framed artwork",
+    "res-08": "Desk vignette with a large iron clock",
+    "res-09": "Bedroom with a tufted headboard and linen bedding",
+    "np-01": "Colorful textiles and lanterns inside the Boho Beach House playhouse",
+    "np-02": "Layered rugs and cushions inside the Boho Beach House playhouse",
+    "studio-weston": "Weston Broadrick",
+}
+
+# Studio copy, word for word from the current site
+STUDIO_LEAD = "Weston Broadrick Studio is a Phoenix-based interior design practice specializing in restaurant and hospitality environments."
+STUDIO_PARAS = [
+    "Founded by Weston Broadrick, the studio is known for creating refined, immersive interiors that elevate the guest experience while supporting the operational goals of each client.",
+    "Weston brings over a decade of experience from Ralph Lauren Home, where he developed a deep understanding of craftsmanship, materiality, and the art of layered, narrative-driven spaces. Influenced by Ralph Lauren’s distinct point of view—where heritage, lifestyle, and environment intersect—his work reflects a balance of timeless design and modern sensibility.",
+    "The studio designs residential, hospitality, and retail interiors, with a particular focus on restaurants. Each project is approached as a complete experience, where layout, lighting, texture, and detail work together to shape how a space feels and functions.",
+    "Weston Broadrick Studio works with a discerning clientele and takes on a limited number of projects each year to maintain the highest standards of craft. This selective approach fosters a highly collaborative and considered design process, ensuring each interior is both visually compelling and deeply functional—spaces that captivate guests and endure over time.",
+]
+HOME_LEAD = "A Phoenix-based interior design studio specializing in restaurant and hospitality spaces."
+HOME_BODY = "With over a decade of experience at Ralph Lauren Home, Weston brings a refined, detail-driven approach to creating spaces that elevate the guest experience and support business growth. The studio works with a discerning clientele and takes on a limited number of projects each year to maintain the highest standards of craft."
+DESCRIPTION = "Weston Broadrick Studio is a Phoenix interior design studio specializing in restaurant and hospitality spaces, shaped by over a decade at Ralph Lauren Home."
+
+
+# ---------------------------------------------------------------------------
+# Building blocks
+# ---------------------------------------------------------------------------
+def img(slug, p, sizes="100vw", cls="", eager=False, focus=""):
+    """An <img> with a phone-sized version when one exists (srcset)."""
+    m = IMAGES[slug]
+    src = f"{p}images/{slug}.jpg"
+    srcset = f' srcset="{p}images/{slug}-sm.jpg 1000w, {src} {m["w"]}w" sizes="{sizes}"' if m["sm"] else ""
+    load = 'fetchpriority="high"' if eager else 'loading="lazy"'
+    c = f' class="{cls}"' if cls else ""
+    if focus:
+        c += f' style="object-position:{focus}"'
+    return (f'<img src="{src}"{srcset} width="{m["w"]}" height="{m["h"]}" '
+            f'alt="{escape(ALT.get(slug, ""))}" data-full="{src}" {load} decoding="async"{c}>')
+
+
+def head(title, p, path, desc=DESCRIPTION, og="res-01"):
+    full_title = f"{title} — Weston Broadrick Studio" if title else "Weston Broadrick Studio — Interior Design, Phoenix"
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{escape(full_title)}</title>
+<meta name="description" content="{escape(desc)}">
+<link rel="canonical" href="{DOMAIN}/{path}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{escape(full_title)}">
+<meta property="og:description" content="{escape(desc)}">
+<meta property="og:image" content="{DOMAIN}/images/{og}.jpg">
+<meta property="og:url" content="{DOMAIN}/{path}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#151412">
+<link rel="icon" href="{p}favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..600&family=Poppins:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="{p}css/site.css">
+</head>"""
+
+
+def header(p, current=""):
+    def a(href, label, key):
+        cur = ' aria-current="page"' if key == current else ""
+        return f'<a href="{p}{href}"{cur}>{label}</a>'
+    return f"""<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="wordmark" href="{p or './'}" aria-label="Weston Broadrick Studio, home"><span>Weston</span><span>Broadrick</span></a>
+  <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+  <nav class="nav" id="site-nav" aria-label="Main">
+    {a("projects/", "Projects", "projects")}
+    {a("contact/", "Studio", "studio")}
+    <a href="mailto:{EMAIL}">Inquire</a>
+  </nav>
+</header>"""
+
+
+def footer(p):
+    return f"""<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-cta reveal">
+      <span class="eyebrow">A limited number of projects each year</span><br>
+      <a class="footer-email" href="mailto:{EMAIL}">{EMAIL}</a>
+    </div>
+    <div class="footer-base">
+      <span>&copy; {YEAR} Weston Broadrick Studio &middot; Phoenix, Arizona</span>
+      <nav aria-label="Footer"><a href="{p}projects/">Projects</a><a href="{p}contact/">Studio</a></nav>
+    </div>
+  </div>
+</footer>
+<script src="{p}js/site.js"></script>
+</body>
+</html>
+"""
+
+
+def work_rows(p, order):
+    """The big alternating project list used on Home and Projects."""
+    by_slug = {x["slug"]: x for x in PROJECTS}
+    pattern = ["a", "b", "c", "a", "b"]
+    sizes = {"a": "(max-width: 820px) 100vw, 66vw", "b": "(max-width: 820px) 100vw, 58vw", "c": "100vw"}
+    out = []
+    for i, slug in enumerate(order):
+        pr = by_slug[slug]
+        kind = pattern[i % len(pattern)]
+        out.append(f"""  <a class="work {kind} reveal" href="{p}projects/{slug}/">
+    <div class="work-media">{img(pr["tile"], p, sizes[kind])}</div>
+    <div class="work-caption">
+      <span class="eyebrow work-num">{i + 1:02d}</span>
+      <h3 class="work-name">{escape(pr["name"])}</h3>
+      <div class="work-type">{escape(pr["sector"])} &middot; {escape(pr["location"])}</div>
+      <span class="eyebrow work-link">View project</span>
+    </div>
+  </a>""")
+    return "\n".join(out)
+
+
+def gallery(p, rows):
+    out = []
+    for row in rows:
+        kind, shots = row[0], row[1:]
+        if kind == "two":
+            figs = "".join(f"<figure>{img(s, p, '(max-width: 720px) 100vw, 50vw')}</figure>" for s in shots)
+            out.append(f'<div class="g-row two reveal">{figs}</div>')
+        elif kind == "offset":
+            a, b = shots
+            out.append(f'<div class="g-row offset reveal"><figure>{img(a, p, "(max-width: 720px) 100vw, 42vw")}</figure>'
+                       f'<figure>{img(b, p, "(max-width: 720px) 100vw, 58vw")}</figure></div>')
+        elif kind == "full":
+            out.append(f'<div class="g-row reveal"><figure>{img(shots[0], p)}</figure></div>')
+        elif kind == "inset":
+            out.append(f'<div class="g-row one-inset reveal"><figure>{img(shots[0], p, "80vw")}</figure></div>')
+        elif kind == "narrow":
+            out.append(f'<div class="g-row reveal" style="max-width:760px;margin:0 auto;width:100%"><figure>{img(shots[0], p, "(max-width: 720px) 100vw, 760px")}</figure></div>')
+    return "\n".join(out)
+
+
+def write(rel, html):
+    path = os.path.join(ROOT, rel)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(html)
+    print("wrote", rel)
+
+
+# ---------------------------------------------------------------------------
+# Pages
+# ---------------------------------------------------------------------------
+def build_home():
+    p = ""
+    schema = {
+        "@context": "https://schema.org", "@type": "InteriorDesigner",
+        "name": "Weston Broadrick Studio", "url": DOMAIN + "/", "email": EMAIL,
+        "image": f"{DOMAIN}/images/res-01.jpg", "founder": {"@type": "Person", "name": "Weston Broadrick"},
+        "address": {"@type": "PostalAddress", "addressLocality": "Phoenix", "addressRegion": "AZ", "addressCountry": "US"},
+        "description": DESCRIPTION,
+    }
+    write("index.html", f"""{head("", p, "")}
+<body class="has-hero">
+{header(p)}
+<main id="main">
+  <section class="hero">
+    {img("res-01", p, eager=True, focus="50% 22%")}
+    <div class="hero-text">
+      <h1 class="hero-title">Weston<br>Broadrick</h1>
+      <div class="hero-meta">
+        <span class="eyebrow">Interior Design</span>
+        <span class="eyebrow">Phoenix, Arizona</span>
+        <div class="scroll-cue" aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="statement wrap">
+    <div class="statement-grid reveal">
+      <span class="eyebrow">Weston Broadrick Studio</span>
+      <div>
+        <p class="statement-lead">{escape(HOME_LEAD)}</p>
+        <p class="statement-body">{escape(HOME_BODY)}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="index wrap" aria-labelledby="work-h">
+    <div class="index-head"><h2 class="eyebrow" id="work-h" style="margin:0">Selected Work</h2><a class="eyebrow" href="projects/">All projects</a></div>
+{work_rows(p, HOME_ORDER)}
+  </section>
+
+  <section class="studio-band">
+    <div class="wrap studio-grid reveal">
+      {img("studio-weston", p, "(max-width: 820px) 100vw, 40vw")}
+      <div>
+        <span class="eyebrow">The Studio</span>
+        <p class="studio-quote">Over a decade at Ralph Lauren Home, where heritage, lifestyle, and environment intersect.</p>
+        <p>{escape(STUDIO_PARAS[2])}</p>
+        <a class="eyebrow work-link" href="contact/">About the studio</a>
+      </div>
+    </div>
+  </section>
+</main>
+<script type="application/ld+json">{json.dumps(schema)}</script>
+{footer(p)}""")
+
+
+def build_projects_index():
+    p = "../"
+    write("projects/index.html", f"""{head("Projects", p, "projects/")}
+<body>
+{header(p, "projects")}
+<main id="main">
+  <section class="page-head wrap">
+    <span class="eyebrow">Hospitality &middot; Residential &middot; Nonprofit</span>
+    <h1 class="hero-title" style="margin-top:14px">Projects</h1>
+  </section>
+  <section class="index wrap">
+{work_rows(p, [x["slug"] for x in PROJECTS])}
+  </section>
+</main>
+{footer(p)}""")
+
+
+def build_project(i):
+    pr = PROJECTS[i]
+    nxt = PROJECTS[(i + 1) % len(PROJECTS)]
+    p = "../../"
+    story = ""
+    if pr["lead"] or pr["body"]:
+        body = f'<p class="statement-body">{escape(pr["body"])}</p>' if pr["body"] else ""
+        story = f"""  <section class="project-story wrap reveal">
+    <p class="statement-lead">{escape(pr["lead"])}</p>
+    {body}
+  </section>"""
+    subtitle = pr.get("subtitle", "Interior design")
+    desc = pr["lead"] or f"{pr['name']} — {pr['sector'].lower()} interior by Weston Broadrick Studio, {pr['location']}."
+    write(f"projects/{pr['slug']}/index.html", f"""{head(pr["name"], p, f"projects/{pr['slug']}", desc, pr["hero"])}
+<body class="has-hero">
+{header(p, "projects")}
+<main id="main">
+  <section class="hero">
+    {img(pr["hero"], p, eager=True, focus=pr.get("focus", ""))}
+    <div class="hero-text">
+      <h1 class="hero-title">{escape(pr["name"])}</h1>
+      <div class="hero-meta"><span class="eyebrow">{escape(pr["sector"])}</span><span class="eyebrow">{escape(pr["location"])}</span></div>
+    </div>
+  </section>
+  <div class="wrap">
+    <dl class="project-meta reveal">
+      <div><dt class="eyebrow">Project</dt><dd>{escape(pr["name"])}</dd></div>
+      <div><dt class="eyebrow">Sector</dt><dd>{escape(pr["sector"])}</dd></div>
+      <div><dt class="eyebrow">Location</dt><dd>{escape(pr["location"])}</dd></div>
+      <div><dt class="eyebrow">Scope</dt><dd>{escape(subtitle)}</dd></div>
+    </dl>
+  </div>
+{story}
+  <section class="gallery wrap" aria-label="{escape(pr['name'])} photographs">
+{gallery(p, pr["gallery"])}
+  </section>
+  <div class="wrap">
+    <a class="next-project" href="{p}projects/{nxt['slug']}/">
+      <span class="eyebrow">Next project</span>
+      <h2 class="work-name">{escape(nxt["name"])}</h2>
+    </a>
+  </div>
+</main>
+{footer(p)}""")
+
+
+def build_studio():
+    p = "../"
+    paras = "\n".join(f"        <p>{escape(t)}</p>" for t in STUDIO_PARAS)
+    write("contact/index.html", f"""{head("Studio", p, "contact", og="studio-weston")}
+<body>
+{header(p, "studio")}
+<main id="main">
+  <section class="page-head wrap">
+    <span class="eyebrow">About &amp; Contact</span>
+    <h1 class="hero-title" style="margin-top:14px">The Studio</h1>
+  </section>
+  <section class="wrap about-grid">
+    {img("studio-weston", p, "(max-width: 820px) 100vw, 40vw")}
+    <div class="about-copy reveal">
+      <p class="statement-lead">{escape(STUDIO_LEAD)}</p>
+{paras}
+      <p style="margin-top:2.4em"><span class="eyebrow">Inquiries</span><br>
+        <a class="work-link" style="margin-top:10px" href="mailto:{EMAIL}">{EMAIL}</a></p>
+    </div>
+  </section>
+</main>
+{footer(p)}""")
+
+
+def build_extras():
+    # Old Squarespace address /home now forwards to the home page
+    write("home/index.html", f"""<!doctype html><meta charset="utf-8"><title>Weston Broadrick Studio</title>
+<link rel="canonical" href="{DOMAIN}/"><meta http-equiv="refresh" content="0; url=../"><a href="../">Continue</a>""")
+    # "Page not found" — GitHub serves this from any depth, so it uses root paths
+    write("404.html", f"""{head("Page not found", "/", "404")}
+<body>
+{header("/")}
+<main id="main">
+  <section class="page-head wrap" style="min-height:70vh">
+    <span class="eyebrow">404</span>
+    <h1 class="hero-title" style="margin-top:14px">Page not found</h1>
+    <p style="margin-top:28px"><a class="work-link eyebrow" href="/projects/">View projects</a></p>
+  </section>
+</main>
+{footer("/")}""")
+    urls = ["", "projects/", "contact/"] + [f"projects/{x['slug']}/" for x in PROJECTS]
+    write("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+          + "".join(f"  <url><loc>{DOMAIN}/{u}</loc></url>\n" for u in urls) + "</urlset>\n")
+    write("robots.txt", f"User-agent: *\nAllow: /\nSitemap: {DOMAIN}/sitemap.xml\n")
+
+
+if __name__ == "__main__":
+    build_home()
+    build_projects_index()
+    for i in range(len(PROJECTS)):
+        build_project(i)
+    build_studio()
+    build_extras()
