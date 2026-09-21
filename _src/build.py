@@ -28,6 +28,7 @@ IMAGES = json.load(open(os.path.join(ROOT, "images.json")))
 #                ("full", a)        one photo, full width
 #                ("inset", a)       one photo, full width with side margins
 #                ("narrow", a)      one tall photo, centered
+#                ("full-float", a, b) full-width a, with b as a floating circle on top
 # ---------------------------------------------------------------------------
 PROJECTS = [
     {
@@ -49,8 +50,7 @@ PROJECTS = [
         "lead": "", "body": "",
         "gallery": [
             ("two", "feta-cover", "feta-02"),
-            ("full", "feta-01"),
-            ("narrow", "feta-03"),
+            ("full-float", "feta-01", "feta-03"),
         ],
     },
     {
@@ -238,15 +238,24 @@ def gallery(p, rows):
     out = []
     for row in rows:
         kind, shots = row[0], row[1:]
-        if kind == "two":
-            figs = "".join(f"<figure>{img(s, p, '(max-width: 720px) 100vw, 50vw')}</figure>" for s in shots)
-            out.append(f'<div class="g-row two reveal">{figs}</div>')
-        elif kind == "offset":
-            a, b = shots
-            out.append(f'<div class="g-row offset reveal"><figure>{img(a, p, "(max-width: 720px) 100vw, 42vw")}</figure>'
-                       f'<figure>{img(b, p, "(max-width: 720px) 100vw, 58vw")}</figure></div>')
+        if kind in ("two", "offset"):
+            # Side-by-side pair: each photo's width follows its shape, so both
+            # stand the same height and neither gets cropped (desktop).
+            ratios = [IMAGES[s]["w"] / IMAGES[s]["h"] for s in shots]
+            total = sum(ratios)
+            figs = "".join(
+                f'<figure style="--ar:{r:.4f};aspect-ratio:{IMAGES[s]["w"]} / {IMAGES[s]["h"]}">'
+                f'{img(s, p, f"(max-width: 720px) 100vw, {round(100 * r / total)}vw")}</figure>'
+                for s, r in zip(shots, ratios))
+            out.append(f'<div class="g-row pair reveal">{figs}</div>')
         elif kind == "full":
             out.append(f'<div class="g-row reveal"><figure>{img(shots[0], p)}</figure></div>')
+        elif kind == "full-float":
+            # Full-width photo with a small round photo floating over its top-right,
+            # overlapping the row above (Feta Cowboy's salt & pepper shakers)
+            big, small = shots
+            out.append(f'<div class="g-row has-float reveal"><figure>{img(big, p)}</figure>'
+                       f'<div class="float-wrap"><figure class="float-circle">{img(small, p, "(max-width: 720px) 130px, 320px")}</figure></div></div>')
         elif kind == "inset":
             out.append(f'<div class="g-row one-inset reveal"><figure>{img(shots[0], p, "80vw")}</figure></div>')
         elif kind == "narrow":
