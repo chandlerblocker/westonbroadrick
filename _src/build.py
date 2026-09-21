@@ -24,6 +24,7 @@ IMAGES = json.load(open(os.path.join(ROOT, "images.json")))
 # ---------------------------------------------------------------------------
 # Projects, in the order they appear on the Projects page.
 # Each page ends with its header photo repeated full width, unless "repeat_hero": False.
+# "seo" = the description Google and link previews show (not visible on the page, keep under 160 characters).
 # gallery rows:  ("two", a, b)      two portraits side by side
 #                ("offset", a, b)   tall photo + wide photo, staggered
 #                ("full", a)        one photo, full width
@@ -34,19 +35,20 @@ IMAGES = json.load(open(os.path.join(ROOT, "images.json")))
 # ---------------------------------------------------------------------------
 PROJECTS = [
     {
-        "slug": "pala", "name": "Pa’La", "sector": "Restaurant", "location": "Phoenix, Arizona",
-        "hero": "pala-01", "tile": "pala-01",
+        "slug": "pala", "seo": "Pa\u2019La, Phoenix. A wood-fired restaurant interior by Weston Broadrick Studio: red octopus murals, brass lamps and layered lounge seating.", "name": "Pa’La", "sector": "Restaurant", "location": "Phoenix, Arizona",
+        "hero": "pala-01", "tile": "pala-01", "repeat_hero": False,
         "lead": "",
         "body": "",
         "gallery": [
             ("offset", "pala-02", "pala-04"),
             ("full-float", "pala-05", ("pala-07", "pos-tr inside big"), ("pala-08", "pos-bl inside big")),
             ("two", "pala-lounge", "pala-03"),
+            ("full", "pala-01"),
             ("full", "pala-06"),
         ],
     },
     {
-        "slug": "fetacowboy", "name": "Feta Cowboy", "sector": "Restaurant", "location": "Phoenix, Arizona",
+        "slug": "fetacowboy", "seo": "Feta Cowboy, Tempe. A restaurant interior by Weston Broadrick Studio: hand-painted cowboy mural, cowhide seating and a sculptural branch chandelier.", "name": "Feta Cowboy", "sector": "Restaurant", "location": "Tempe, Arizona",
         "hero": "feta-04", "tile": "feta-cover",
         "lead": "", "body": "",
         "gallery": [
@@ -55,7 +57,7 @@ PROJECTS = [
         ],
     },
     {
-        "slug": "pita-jungle", "name": "Pita Jungle", "sector": "Restaurant", "location": "Arcadia, Phoenix",
+        "slug": "pita-jungle", "seo": "Pita Jungle Arcadia, Phoenix. A restaurant interior by Weston Broadrick Studio: sculptural dome pendants, deep green walls and a painted mural.", "name": "Pita Jungle", "sector": "Restaurant", "location": "Arcadia, Phoenix",
         "hero": "pita-02", "tile": "pita-02", "repeat_hero": False,
         "lead": "", "body": "",
         "gallery": [
@@ -63,7 +65,7 @@ PROJECTS = [
         ],
     },
     {
-        "slug": "residential", "name": "Residential", "sector": "Residential", "location": "Arizona",
+        "slug": "residential", "seo": "Residential interiors by Weston Broadrick Studio. Layered, collected rooms of leather, reclaimed wood, gallery walls and rich textiles.", "name": "Residential", "sector": "Residential", "location": "Arizona",
         "hero": "res-03", "tile": "res-03", "hide_sector": True,
         "lead": "", "body": "",
         "gallery": [
@@ -74,7 +76,7 @@ PROJECTS = [
         ],
     },
     {
-        "slug": "nonprofit", "name": "Nonprofit", "sector": "Nonprofit", "location": "Phoenix, Arizona",
+        "slug": "nonprofit", "seo": "The Boho Beach House: a coastal-inspired playhouse designed and donated by Weston Broadrick Studio for PANDA\u2019s annual fundraiser.", "name": "Nonprofit", "sector": "Nonprofit", "location": "Phoenix, Arizona",
         "hero": "np-01", "tile": "np-01", "hide_sector": True, "repeat_hero": False,
         "subtitle": "The Boho Beach House",
         "lead": "The Boho Beach House is a coastal-inspired playhouse created in support of PANDA and its annual fundraising efforts.",
@@ -352,7 +354,7 @@ def build_project(i):
     {body}
   </section>"""
     subtitle = pr.get("subtitle", "Interior design")
-    desc = pr["lead"] or f"{pr['name']} — {pr['sector'].lower()} interior by Weston Broadrick Studio, {pr['location']}."
+    desc = pr.get("seo") or pr["lead"] or f"{pr['name']} — {pr['sector'].lower()} interior by Weston Broadrick Studio, {pr['location']}."
     write(f"projects/{pr['slug']}/index.html", f"""{head(pr["name"], p, f"projects/{pr['slug']}", desc, pr["hero"])}
 <body class="has-hero">
 {header(p, pr["slug"])}
