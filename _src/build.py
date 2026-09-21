@@ -28,7 +28,8 @@ IMAGES = json.load(open(os.path.join(ROOT, "images.json")))
 #                ("full", a)        one photo, full width
 #                ("inset", a)       one photo, full width with side margins
 #                ("narrow", a)      one tall photo, centered
-#                ("full-float", a, b) full-width a, with b as a floating circle on top
+#                ("full-float", a, (b, "pos-tr"), (c, "pos-bl"))  full-width a, with round
+#                                   photos floating on top (tr = top right, bl = bottom left)
 # ---------------------------------------------------------------------------
 PROJECTS = [
     {
@@ -38,10 +39,10 @@ PROJECTS = [
         "body": "",
         "gallery": [
             ("offset", "pala-02", "pala-04"),
-            ("full", "pala-05"),
+            ("full-float", "pala-05", ("pala-07", "pos-tr"), ("pala-08", "pos-bl")),
             ("two", "pala-lounge", "pala-03"),
-            ("inset", "pala-06"),
-            ("two", "pala-07", "pala-08"),
+            ("full", "pala-06"),
+            ("full", "pala-01"),
         ],
     },
     {
@@ -50,7 +51,7 @@ PROJECTS = [
         "lead": "", "body": "",
         "gallery": [
             ("two", "feta-cover", "feta-02"),
-            ("full-float", "feta-01", "feta-03"),
+            ("full-float", "feta-01", ("feta-03", "pos-tr m-br")),
         ],
     },
     {
@@ -251,11 +252,13 @@ def gallery(p, rows):
         elif kind == "full":
             out.append(f'<div class="g-row reveal"><figure>{img(shots[0], p)}</figure></div>')
         elif kind == "full-float":
-            # Full-width photo with a small round photo floating over its top-right,
-            # overlapping the row above (Feta Cowboy's salt & pepper shakers)
-            big, small = shots
-            out.append(f'<div class="g-row has-float reveal"><figure>{img(big, p)}</figure>'
-                       f'<div class="float-wrap"><figure class="float-circle">{img(small, p, "(max-width: 720px) 130px, 320px")}</figure></div></div>')
+            # Full-width photo with round photos floating on top of it, overlapping
+            # the rows above/below. Each float is (photo, position classes).
+            big, floats = shots[0], shots[1:]
+            circles = "".join(
+                f'<div class="float-wrap {pos}"><figure class="float-circle">{img(s, p, "(max-width: 720px) 130px, 320px")}</figure></div>'
+                for s, pos in floats)
+            out.append(f'<div class="g-row has-float reveal"><figure>{img(big, p)}</figure>{circles}</div>')
         elif kind == "inset":
             out.append(f'<div class="g-row one-inset reveal"><figure>{img(shots[0], p, "80vw")}</figure></div>')
         elif kind == "narrow":
@@ -314,16 +317,6 @@ def build_home():
 {work_rows(p, HOME_ORDER)}
   </section>
 
-  <section class="studio-band">
-    <div class="wrap studio-grid reveal">
-      {img("studio-weston", p, "(max-width: 820px) 100vw, 40vw")}
-      <div>
-        <span class="eyebrow">The Studio</span>
-        <p class="studio-quote">Over a decade at Ralph Lauren Home, where heritage, lifestyle, and environment intersect.</p>
-        <a class="eyebrow work-link" href="contact/">About the studio</a>
-      </div>
-    </div>
-  </section>
 </main>
 <script type="application/ld+json">{json.dumps(schema)}</script>
 {footer(p)}""")
@@ -349,6 +342,7 @@ def build_projects_index():
 def build_project(i):
     pr = PROJECTS[i]
     nxt = PROJECTS[(i + 1) % len(PROJECTS)]
+    prev = PROJECTS[(i - 1) % len(PROJECTS)]
     p = "../../"
     story = ""
     if pr["lead"] or pr["body"]:
@@ -382,10 +376,16 @@ def build_project(i):
 {gallery(p, pr["gallery"])}
   </section>
   <div class="wrap">
-    <a class="next-project" href="{p}projects/{nxt['slug']}/">
-      <span class="eyebrow">Next project</span>
-      <h2 class="work-name">{escape(nxt["name"])}</h2>
-    </a>
+    <nav class="project-nav" aria-label="More projects">
+      <a class="pn-prev" href="{p}projects/{prev['slug']}/">
+        <span class="eyebrow">Previous project</span>
+        <span class="work-name">{escape(prev["name"])}</span>
+      </a>
+      <a class="pn-next" href="{p}projects/{nxt['slug']}/">
+        <span class="eyebrow">Next project</span>
+        <span class="work-name">{escape(nxt["name"])}</span>
+      </a>
+    </nav>
   </div>
 </main>
 {footer(p)}""")

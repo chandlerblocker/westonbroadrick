@@ -266,15 +266,16 @@ a { color: inherit; text-decoration: none; }
 .g-row.pair { display: flex; align-items: flex-start; }
 .g-row.pair figure { flex: var(--ar) 1 0; min-width: 0; }
 
-/* floating round photo (Feta Cowboy) — sits over the top-right of the wide photo,
-   overlapping the pair above, with a soft shadow and a slow drift */
+/* floating round photos (Feta Cowboy, Pa'La) — layered over a wide photo,
+   overlapping the rows above/below, with a soft shadow and a slow drift */
 .g-row.has-float { position: relative; z-index: 2; }
 .float-wrap {
   --d: clamp(180px, 22vw, 320px);
-  position: absolute; right: 7%; top: calc(var(--d) * -0.38);
-  width: var(--d); height: var(--d);
+  position: absolute; width: var(--d); height: var(--d);
   animation: drift 6s ease-in-out infinite;
 }
+.float-wrap.pos-tr { right: 7%; top: calc(var(--d) * -0.38); }
+.float-wrap.pos-bl { left: 7%; bottom: calc(var(--d) * -0.38); animation-delay: -3s; } /* drifts out of step with its partner */
 @keyframes drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
 .float-circle {
   width: 100%; height: 100%; border-radius: 50%;
@@ -291,17 +292,26 @@ a { color: inherit; text-decoration: none; }
   .g-row.pair { flex-direction: column; }
   .g-row.pair figure { flex: none; width: 100%; }
   .g-row.one-inset { padding: 0; }
-  .float-wrap { --d: 130px; top: auto; bottom: -34px; right: 14px; }
+  .float-wrap { --d: 120px; }
+  .float-wrap.pos-tr { right: 14px; top: calc(var(--d) * -0.3); }
+  .float-wrap.pos-bl { left: 14px; bottom: calc(var(--d) * -0.3); }
+  .float-wrap.m-br { --d: 130px; top: auto; bottom: -34px; right: 14px; }
   .float-circle { border-width: 4px; }
 }
-}
 
-.next-project {
-  display: block; border-top: 1px solid var(--line); padding: clamp(48px, 8vw, 100px) 0;
-  text-align: center;
+/* Previous project (left) / Next project (right) at the bottom of each project page */
+.project-nav {
+  display: flex; justify-content: space-between; gap: var(--gutter);
+  border-top: 1px solid var(--line);
+  padding-top: clamp(48px, 8vw, 100px); padding-bottom: clamp(72px, 10vw, 130px);
 }
-.next-project .work-name { margin-top: 14px; transition: letter-spacing .6s var(--ease); }
-.next-project:hover .work-name { letter-spacing: 0.1em; }
+.project-nav a { display: block; }
+.project-nav .pn-next { text-align: right; }
+.project-nav .work-name { display: block; margin-top: 14px; transition: letter-spacing .6s var(--ease); }
+.project-nav a:hover .work-name { letter-spacing: 0.1em; }
+@media (max-width: 720px) {
+  .project-nav { flex-direction: column; gap: 40px; }
+}
 
 /* ---------- plain page header (no hero) ---------- */
 .page-head { padding-top: clamp(140px, 18vw, 220px); padding-bottom: clamp(40px, 6vw, 72px); }
