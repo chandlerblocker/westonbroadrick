@@ -23,6 +23,7 @@ IMAGES = json.load(open(os.path.join(ROOT, "images.json")))
 
 # ---------------------------------------------------------------------------
 # Projects, in the order they appear on the Projects page.
+# Each page ends with its header photo repeated full width, unless "repeat_hero": False.
 # gallery rows:  ("two", a, b)      two portraits side by side
 #                ("offset", a, b)   tall photo + wide photo, staggered
 #                ("full", a)        one photo, full width
@@ -39,10 +40,9 @@ PROJECTS = [
         "body": "",
         "gallery": [
             ("offset", "pala-02", "pala-04"),
-            ("full-float", "pala-05", ("pala-07", "pos-tr"), ("pala-08", "pos-bl")),
+            ("full-float", "pala-05", ("pala-07", "pos-tr inside big"), ("pala-08", "pos-bl inside big")),
             ("two", "pala-lounge", "pala-03"),
             ("full", "pala-06"),
-            ("full", "pala-01"),
         ],
     },
     {
@@ -56,7 +56,7 @@ PROJECTS = [
     },
     {
         "slug": "pita-jungle", "name": "Pita Jungle", "sector": "Restaurant", "location": "Arcadia, Phoenix",
-        "hero": "pita-02", "tile": "pita-02",
+        "hero": "pita-02", "tile": "pita-02", "repeat_hero": False,
         "lead": "", "body": "",
         "gallery": [
             ("offset", "pita-01", "pita-02"),
@@ -75,7 +75,7 @@ PROJECTS = [
     },
     {
         "slug": "nonprofit", "name": "Nonprofit", "sector": "Nonprofit", "location": "Phoenix, Arizona",
-        "hero": "np-01", "tile": "np-01", "hide_sector": True,
+        "hero": "np-01", "tile": "np-01", "hide_sector": True, "repeat_hero": False,
         "subtitle": "The Boho Beach House",
         "lead": "The Boho Beach House is a coastal-inspired playhouse created in support of PANDA and its annual fundraising efforts.",
         "body": "Designed and donated by the studio, and realized in collaboration with Sonora West Development and PHX Architecture, the project reflects a balance of playfulness and considered design.",
@@ -373,7 +373,7 @@ def build_project(i):
   </div>
 {story}
   <section class="gallery wrap" aria-label="{escape(pr['name'])} photographs">
-{gallery(p, pr["gallery"])}
+{gallery(p, pr["gallery"] + ([("full", pr["hero"])] if pr.get("repeat_hero", True) else []))}
   </section>
   <div class="wrap">
     <nav class="project-nav" aria-label="More projects">
